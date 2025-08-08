@@ -1,5 +1,7 @@
 from scrapeo_fbref import *
 from etl import *
+from models import *
+from models_separados import *
 
 
 #1. EXTRACCIÓN DE LOS DATOS 
@@ -113,3 +115,98 @@ df_final_convertido= conversion_columnas90(df_union_dfs, df_final_columns)
 #Filtro del dataframe para obtener el dataframe final de aquellos defensas que han jugado más de 20 minutos jugados/90
 
 df_final_defensas= filtro_jugadores_minutosjugados90(df_final_convertido)
+
+
+#3. CARGA Y BUSQUEDA DE LOS JUGADORES SIMILARES POR RANGO DE EDAD PARA IÑIGO MARTÏNEZ
+
+
+#--------------------------DEFINICIÓN DE LAS METRICAS DE INTERÉS DE COMPARACIÓN-----------------------------------------
+
+metricas_interes = ['passing_total_passes_pct','passing_progressive_passes','passing_passes_into_final_third', 'passing_long_passes_pct_long',
+                    'passing_xg_assist','passing_expected_pass_xa', 'passing_types_passtypes_passes_switches','gca_scatypes_sca_passes_live',
+                    'gca_gcatypes_gca_passes_live','defense_tackles_tackles_won', 'defense_tackles_tackles_def_3rd',
+                    'defense_tackles_tackles_mid_3rd', 'defense_tackles_tackles_att_3rd', 'defense_challenges_challenge_tackles_pct',
+                    'defense_interceptions', 'defense_blocks_blocked_shots', 'defense_blocks_blocked_passes', 'defense_clearances', 'defense_errors',
+                    'possession_carries_progressive_carries', 'possession_carries_carries_into_final_third', 'possession_touches_touches_def_3rd',
+                    'possession_carries_carries', 'possession_carries_carries_distance', 'possession_carries_carries_progressive_distance',
+                    'possession_carries_miscontrols', 'possession_take-ons_take_ons_tackled_pct', 'possession_carries_dispossessed',
+                    'possession_receiving_progressive_passes_received', 'misc_performance_fouls', 'misc_performance_cards_yellow',
+                    'misc_performance_own_goals', 'misc_performance_cards_red', 'misc_performance_ball_recoveries', 'misc_performance_pens_conceded',
+                    'misc_aerialduels_aerials_won', 'misc_aerialduels_aerials_lost', 'misc_aerialduels_aerials_won_pct',
+                    'playingtime_playingtime_minutes_pct', 'playingtime_teamsuccess_points_per_game', 'playingtime_starts_games_starts']
+
+
+
+
+
+
+
+#--------------------------SE FILTRA LA INFORMACIÓN DEL JUGADOR OBJETIVO ------------------------------------------------
+
+jugador_objetivo = df_final_defensas[df_final_defensas['jugador'] == 'Iñigo Martínez'].iloc[0]
+
+
+
+#----------------------CLASSIFICAR CADA JUGADOR CON UN GRUPO DE EDAD: JOVENES, INTERMEDIO Y VETERANOS, SE FILTRA SU VECTOR-------------------
+
+df_final_defensas['grupo_edad'] = df_final_defensas['edad'].apply(clasificar_edad)
+
+# Vector de Iñigo (sin filtrar)
+vector_inigo = df_final_defensas[df_final_defensas['jugador'] == 'Iñigo Martínez'].drop(columns=['jugador', 'nacionalidad', 'posicion', 'equipo', 'competicion', 'año', 'grupo_edad']).values
+
+
+#---------------------------------------USO DE LA FUNCIÓN PARA OBTENER LOS TOP10 MÁS SIMILARES COSINE SIMILARITY EN CADA GRUPO-------------------------------
+
+
+
+top_jovenes_cosine = top_similares_cosine_similarity_separado(df_final_defensas, 'joven', vector_inigo, 'Iñigo Martínez')
+top_intermedios_cosine = top_similares_cosine_similarity_separado(df_final_defensas, 'intermedio', vector_inigo, 'Iñigo Martínez')
+top_veteranos_cosine = top_similares_cosine_similarity_separado(df_final_defensas, 'veterano', vector_inigo, 'Iñigo Martínez')
+
+
+#---------------------------------------USO DE LA FUNCIÓN PARA OBTENER LOS TOP10 MÁS SIMILARES DISTANCE EUCLIDEAN EN CADA GRUPO--------
+
+top_jovenes_euclid = top_similares_distancia_eucludian_separado(df_final_defensas, 'joven', vector_inigo, metric='euclidean')
+top_intermedios_euclid = top_similares_distancia_eucludian_separado(df_final_defensas, 'intermedio', vector_inigo, metric='euclidean')
+top_veteranos_euclid = top_similares_distancia_eucludian_separado(df_final_defensas, 'veterano', vector_inigo, metric='euclidean')
+
+
+#----------------------------------------------EJECUTAR LA FUNCIÓN RESUMEN--------------------------------------------------
+resultados = resumen_similares(df_final_defensas, jugador_objetivo='Iñigo Martínez', min_minutos_90=20, n=10)
+
+
+#---------------------------PASO FINAL: COMBINACION DE SIMILITUDES Y VISUALIZACION DE RESULTADOS
+
+# Asumiendo que ya tienes top_jovenes (cosine) y top_jovenes_euclid (euclidean)
+top_jovenes_combinados = combinar_similitudes(top_jovenes_cosine, top_jovenes_euclid, n=10)
+print(top_jovenes_combinados)
+
+top_intermedios_combinados = combinar_similitudes(top_intermedios_cosine, top_intermedios_euclid, n=10)
+print('')
+print(top_intermedios_combinados)
+
+
+top_veteranos_combinados = combinar_similitudes(top_veteranos_cosine, top_veteranos_euclid, n=10)
+print('')
+print(top_veteranos_combinados)
+
+#4. VISUALIZACION DE LOS DATOS DE CADA JUGADOR SIMILAR A IÑIGO
+
+
+datos_iñigo= df_final_defensas[df_final_defensas['jugador'] == 'Iñigo Martínez'].iloc[0]
+print('\nDATOS IÑIGO MARTÍNEZ\n')
+print(datos_iñigo)
+
+mejor_joven, stats_joven = obtener_mejor_reemplazo(top_jovenes_combinados, df_final_defensas, 'joven')
+mejor_intermedio, stats_intermedio = obtener_mejor_reemplazo(top_intermedios_combinados, df_final_defensas, 'intermedio')
+mejor_veterano, stats_veterano = obtener_mejor_reemplazo(top_veteranos_combinados, df_final_defensas, 'veterano')
+
+
+print('\nDATOS JUGADOR MÁS SIMILAR EN EL GRUPO DE LOS JOVENES\n')
+print(stats_joven)
+
+print('\nDATOS JUGADOR MÁS SIMILAR EN EL GRUPO DE LOS LOS INTERMEDIOS\n')
+print(stats_intermedio)
+
+print('\nDATOS JUGADOR MÁS SIMILAR EN EL GRUPO DE LOS LOS VETERANOS\n')
+print(stats_veterano)
