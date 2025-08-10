@@ -2,6 +2,7 @@ from scrapeo_fbref import *
 from etl import *
 from models import *
 from models_separados import *
+from visualizacions import *
 
 
 #1. EXTRACCIÓN DE LOS DATOS 
@@ -210,3 +211,39 @@ print(stats_intermedio)
 
 print('\nDATOS JUGADOR MÁS SIMILAR EN EL GRUPO DE LOS LOS VETERANOS\n')
 print(stats_veterano)
+
+
+#--------------------------------------------PASO EXTRA: VISUALIZACIONES METRICAS COMPARACION Y RANKINGS--------------------------
+
+#Comparaciones Iñigo con el primer jugador similar: 'Joško Gvardiol' 
+players = ['Iñigo Martínez', 'Joško Gvardiol']
+colors = ['steelblue', 'green']
+output_dir = "graficos_barras_comparativos/gvardiol"
+
+plot_comparative_bars(df_final_defensas, players, colors, METRICAS_BARCELONA, output_dir)
+
+
+#Comparaciones Iñigo con el segundo jugador similar: 'Joško Gvardiol' 
+players = ['Iñigo Martínez', 'Rúben Dias']
+colors = ['steelblue', 'orange']
+output_dir = "graficos_barras_comparativos/ruben_dias"
+
+plot_comparative_bars(df_final_defensas, players, colors, METRICAS_BARCELONA, output_dir)
+
+
+#Comparaciones Iñigo con el segundo jugador similar: 'Joško Gvardiol' 
+players = ['Iñigo Martínez', 'Daley Blind']
+colors = ['steelblue', 'gray']
+output_dir = "graficos_barras_comparativos/daley_blind"
+
+plot_comparative_bars(df_final_defensas, players, colors, METRICAS_BARCELONA, output_dir)
+
+#-------------------------------------------------------------------------------------------------------------
+
+#Posición de iñigo en ciertas métricas destacables
+ranking_inigo_destacadas = ranking_metricas_jugador(df_final_defensas, 'Iñigo Martínez', METRICAS_DESTACADAS_INIGO)
+tabla_final= creaciondataframe_metricas_destacadas(ranking_inigo_destacadas)
+print(tabla_final)
+
+plot_ranking_progress(tabla_final, output_path="ranking_inigo_barra_progreso.png",
+                      title=None)
