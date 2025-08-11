@@ -5,6 +5,7 @@ import re
 import os
 import matplotlib.patches as mpatches
 
+# Definimos diccionario constante para poder seleccionar las métricas deseables para uso posterior
 
 METRICAS_BARCELONA = {
     
@@ -47,6 +48,9 @@ METRICAS_DESTACADAS_INIGO = {
     'playingtime_teamsuccess_points_per_game': 'Puntos por partido',
     'misc_aerialduels_aerials_won_pct': '% Duelos aéreos ganados'
 }
+
+
+#----------------------FUNCIÓN PARA VISUALIZAR LAS MÉTRICAS DESEABLES PARA EL JUGADOR Y SU JUGADOR SIMILAR--------------------
 
 def plot_comparative_bars(df, players, colors, metricas_barca, output_dir, bar_height=0.9):
     """
@@ -125,6 +129,8 @@ def plot_comparative_bars(df, players, colors, metricas_barca, output_dir, bar_h
         plt.savefig(filepath, transparent=True, bbox_inches='tight', dpi=300)
         plt.close()
 
+#----------------------FUNCIONES PARA CREAR EL DATAFRAME DE LAS MÉTRICAS DESTACADAS DEL JUGADOR OBJETIVO-------------------------
+
 def ranking_metricas_jugador(df, jugador_nombre, metricas_dict):
     """
     Calcula en qué posición del ranking (dentro de su grupo de edad) está el jugador
@@ -165,6 +171,8 @@ def ranking_metricas_jugador(df, jugador_nombre, metricas_dict):
 
     return pd.DataFrame(resultados)
 
+
+
 def creaciondataframe_metricas_destacadas(df):
     # Ordenar para que salgan primero las mejores posiciones
     ranking_inigo_destacadas = df.sort_values(by='Posición en ranking').reset_index(drop=True)
@@ -186,6 +194,8 @@ def creaciondataframe_metricas_destacadas(df):
     tabla_final["Color"] = tabla_final["Posición en ranking"].apply(color_por_ranking)
 
     return tabla_final
+
+#------------------FUNCIÓN PARA VISUALIZAR LAS MÉTRICAS DESTACABLES PARA EL JUGADOR RESPECTO SU GRUPO DE EDAD--------------------
 
 def plot_ranking_progress(tabla_final, output_path=None, figsize=(8,5), title=None):
     """

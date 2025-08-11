@@ -176,7 +176,7 @@ top_veteranos_euclid = top_similares_distancia_eucludian_separado(df_final_defen
 resultados = resumen_similares(df_final_defensas, jugador_objetivo='Iñigo Martínez', min_minutos_90=20, n=10)
 
 
-#---------------------------PASO FINAL: COMBINACION DE SIMILITUDES Y VISUALIZACION DE RESULTADOS
+#---------------------------PASO FINAL: COMBINACION DE SIMILITUDES Y VISUALIZACION DE RESULTADOS-------------------------------
 
 # Asumiendo que ya tienes top_jovenes (cosine) y top_jovenes_euclid (euclidean)
 top_jovenes_combinados = combinar_similitudes(top_jovenes_cosine, top_jovenes_euclid, n=10)
@@ -190,6 +190,7 @@ print(top_intermedios_combinados)
 top_veteranos_combinados = combinar_similitudes(top_veteranos_cosine, top_veteranos_euclid, n=10)
 print('')
 print(top_veteranos_combinados)
+
 
 #4. VISUALIZACION DE LOS DATOS DE CADA JUGADOR SIMILAR A IÑIGO
 
@@ -238,12 +239,13 @@ output_dir = "graficos_barras_comparativos/daley_blind"
 
 plot_comparative_bars(df_final_defensas, players, colors, METRICAS_BARCELONA, output_dir)
 
-#-------------------------------------------------------------------------------------------------------------
+#----------------------------CREACIÓN GRÁFICO BARRAS DE MÉTRICAS DESTACABLES EN SU GRUPO-----------------------------
 
 #Posición de iñigo en ciertas métricas destacables
 ranking_inigo_destacadas = ranking_metricas_jugador(df_final_defensas, 'Iñigo Martínez', METRICAS_DESTACADAS_INIGO)
 tabla_final= creaciondataframe_metricas_destacadas(ranking_inigo_destacadas)
 print(tabla_final)
 
+#Ploteamos en un gráfico de barras vertical donde se encuentra el jugador con esas métricas respecto su grupo de edad
 plot_ranking_progress(tabla_final, output_path="ranking_inigo_barra_progreso.png",
                       title=None)
